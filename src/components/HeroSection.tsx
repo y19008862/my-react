@@ -4,10 +4,11 @@ import heroImage from '@/assets/hero-jewelry.jpg';
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cream-dark">
-      {/* Subtle gold decorative element */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-[600px] h-[600px] rounded-full bg-gold/5 blur-3xl" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background image */}
+      <div className="absolute inset-0">
+        <img src={heroImage} alt="Luxury jewelry" width={1920} height={1080} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-cream/80 backdrop-blur-[2px]" />
       </div>
 
       <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
