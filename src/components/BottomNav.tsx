@@ -6,7 +6,6 @@ const BottomNav = () => {
   const location = useLocation();
   const count = useWishlistStore((s) => s.count);
 
-  // Hide on admin pages
   if (location.pathname.startsWith('/admin')) return null;
 
   const items = [
@@ -17,7 +16,7 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/50 md:hidden safe-area-pb">
       <div className="flex items-center justify-around h-16">
         {items.map((item) => {
           const active = location.pathname === item.to;
@@ -25,14 +24,14 @@ const BottomNav = () => {
             <Link
               key={item.to}
               to={item.to}
-              className={`flex flex-col items-center gap-0.5 relative transition-colors ${
+              className={`flex flex-col items-center gap-1 relative py-2 px-4 transition-colors duration-200 ${
                 active ? 'text-gold' : 'text-muted-foreground'
               }`}
             >
-              <item.icon size={20} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <item.icon size={20} strokeWidth={active ? 2 : 1.5} />
+              <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
               {item.badge ? (
-                <span className="absolute -top-1 right-0 bg-gold text-primary-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-0.5 right-1 bg-gold text-primary-foreground text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {item.badge}
                 </span>
               ) : null}

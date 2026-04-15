@@ -16,7 +16,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -24,10 +24,8 @@ const Navbar = () => {
   useEffect(() => { if (searchOpen) searchRef.current?.focus(); }, [searchOpen]);
 
   const navBg = scrolled || !isHome || menuOpen
-    ? 'bg-card/95 backdrop-blur-md shadow-sm'
+    ? 'bg-card/95 backdrop-blur-xl shadow-[0_1px_0_0_hsl(var(--border)/0.5)]'
     : 'bg-transparent';
-
-  const textColor = scrolled || !isHome ? 'text-foreground' : 'text-foreground';
 
   const links = [
     { to: '/', label: 'Home' },
@@ -46,31 +44,33 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBg}`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Mobile menu */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`md:hidden p-2 ${textColor}`}
+              className="md:hidden p-2 text-foreground"
             >
               {menuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <span className={`font-heading text-xl md:text-2xl font-bold text-gold-gradient`}>
+            <Link to="/" className="flex items-center">
+              <span className="font-heading text-xl md:text-2xl font-bold text-gold-gradient">
                 Madhuvan Novelty
               </span>
             </Link>
 
             {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-10">
               {links.map((l) => (
                 <Link
                   key={l.to}
                   to={l.to}
-                  className={`text-sm font-medium tracking-wide uppercase ${textColor} hover:text-gold transition-colors`}
+                  className={`text-[13px] font-medium tracking-[0.12em] uppercase transition-colors duration-300 ${
+                    location.pathname === l.to ? 'text-gold' : 'text-foreground hover:text-gold'
+                  }`}
                 >
                   {l.label}
                 </Link>
@@ -78,16 +78,20 @@ const Navbar = () => {
             </div>
 
             {/* Icons */}
-            <div className="flex items-center gap-3">
-              <button onClick={() => setSearchOpen(!searchOpen)} className={`p-2 ${textColor} hover:text-gold transition-colors`}>
-                <Search size={20} />
+            <div className="flex items-center gap-1">
+              <button onClick={() => setSearchOpen(!searchOpen)} className="p-2.5 text-foreground hover:text-gold transition-colors duration-200">
+                <Search size={19} strokeWidth={1.5} />
               </button>
-              <Link to="/wishlist" className={`p-2 relative ${textColor} hover:text-gold transition-colors`}>
-                <Heart size={20} />
+              <Link to="/wishlist" className="p-2.5 relative text-foreground hover:text-gold transition-colors duration-200">
+                <Heart size={19} strokeWidth={1.5} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gold text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-0.5 -right-0.5 bg-gold text-primary-foreground text-[9px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center"
+                  >
                     {wishlistCount}
-                  </span>
+                  </motion.span>
                 )}
               </Link>
             </div>
@@ -101,15 +105,16 @@ const Navbar = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="border-t border-border overflow-hidden bg-card"
+              transition={{ duration: 0.25 }}
+              className="border-t border-border/50 overflow-hidden bg-card"
             >
-              <form onSubmit={handleSearch} className="container mx-auto px-4 py-3">
+              <form onSubmit={handleSearch} className="container mx-auto px-4 py-4">
                 <input
                   ref={searchRef}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search jewelry..."
-                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-body"
+                  className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-body text-sm tracking-wide"
                 />
               </form>
             </motion.div>
@@ -121,17 +126,20 @@ const Navbar = () => {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="fixed inset-0 top-16 z-40 bg-card/98 backdrop-blur-lg md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 top-16 z-40 bg-card/98 backdrop-blur-2xl md:hidden"
           >
-            <div className="flex flex-col items-center pt-12 gap-8">
+            <div className="flex flex-col items-center pt-16 gap-10">
               {links.map((l) => (
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="text-lg font-heading tracking-widest uppercase text-foreground hover:text-gold transition-colors"
+                  className={`text-lg font-heading tracking-[0.2em] uppercase transition-colors duration-200 ${
+                    location.pathname === l.to ? 'text-gold' : 'text-foreground'
+                  }`}
                 >
                   {l.label}
                 </Link>

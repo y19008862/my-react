@@ -23,15 +23,16 @@ const trustItems = [
   { icon: Shield, title: 'Secure Shopping', desc: '100% safe & secure checkout' },
 ];
 
-const sectionHeader = (subtitle: string, title: string) => (
+const SectionHeader = ({ subtitle, title }: { subtitle: string; title: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    className="text-center mb-14"
+    viewport={{ once: true, margin: '-60px' }}
+    transition={{ duration: 0.6 }}
+    className="text-center mb-16"
   >
-    <p className="text-gold uppercase tracking-[0.25em] text-xs font-body font-medium mb-3">{subtitle}</p>
-    <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">{title}</h2>
+    <p className="text-gold uppercase tracking-[0.3em] text-[11px] font-body font-medium mb-4">{subtitle}</p>
+    <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground tracking-tight">{title}</h2>
   </motion.div>
 );
 
@@ -59,9 +60,9 @@ const Home = () => {
       <HeroSection />
 
       {/* Categories */}
-      <section className="py-20 md:py-32">
+      <section className="py-24 md:py-36">
         <div className="container mx-auto px-4">
-          {sectionHeader('Browse', 'Our Collections')}
+          <SectionHeader subtitle="Browse" title="Our Collections" />
           <Suspense fallback={<LoaderSkeleton count={4} />}>
             {catLoading ? (
               <LoaderSkeleton count={4} />
@@ -79,9 +80,9 @@ const Home = () => {
       </section>
 
       {/* New Arrivals */}
-      <section className="py-20 md:py-32 bg-card">
+      <section className="py-24 md:py-36 bg-card">
         <div className="container mx-auto px-4">
-          {sectionHeader('Just In', 'New Arrivals')}
+          <SectionHeader subtitle="Just In" title="New Arrivals" />
           <Suspense fallback={<LoaderSkeleton count={4} />}>
             {newLoading ? (
               <LoaderSkeleton count={4} />
@@ -97,9 +98,9 @@ const Home = () => {
       </section>
 
       {/* Trending */}
-      <section className="py-20 md:py-32">
+      <section className="py-24 md:py-36">
         <div className="container mx-auto px-4">
-          {sectionHeader('Popular', 'Trending Now')}
+          <SectionHeader subtitle="Popular" title="Trending Now" />
           <Suspense fallback={<LoaderSkeleton count={4} />}>
             {trendLoading ? (
               <LoaderSkeleton count={4} />
@@ -115,9 +116,9 @@ const Home = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 md:py-32 bg-cream-dark">
+      <section className="py-24 md:py-36 bg-cream-dark">
         <div className="container mx-auto px-4">
-          {sectionHeader('Testimonials', 'What Our Customers Say')}
+          <SectionHeader subtitle="Testimonials" title="What Our Customers Say" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {testimonials.map((t, i) => (
               <motion.div
@@ -125,16 +126,16 @@ const Home = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-card p-10 rounded-2xl shadow-sm"
+                transition={{ delay: i * 0.12, duration: 0.5 }}
+                className="bg-card p-10 md:p-12 rounded-2xl shadow-soft"
               >
-                <div className="flex gap-1 mb-5">
+                <div className="flex gap-1 mb-6">
                   {Array.from({ length: t.rating }).map((_, j) => (
-                    <span key={j} className="text-gold text-lg">★</span>
+                    <span key={j} className="text-gold text-base">★</span>
                   ))}
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed italic mb-6">"{t.text}"</p>
-                <p className="font-heading font-semibold text-foreground text-lg">{t.name}</p>
+                <p className="text-muted-foreground text-sm leading-[1.8] italic mb-8">"{t.text}"</p>
+                <p className="font-heading font-semibold text-foreground text-base">{t.name}</p>
               </motion.div>
             ))}
           </div>
@@ -142,23 +143,23 @@ const Home = () => {
       </section>
 
       {/* Trust Banner */}
-      <section className="py-20 md:py-28">
+      <section className="py-24 md:py-32">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-16">
             {trustItems.map((item, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="text-center"
               >
-                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gold/10 flex items-center justify-center">
-                  <item.icon size={24} className="text-gold" />
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gold/8 flex items-center justify-center">
+                  <item.icon size={24} className="text-gold" strokeWidth={1.5} />
                 </div>
-                <h4 className="font-heading text-sm font-semibold text-foreground">{item.title}</h4>
-                <p className="text-muted-foreground text-xs mt-1.5 leading-relaxed">{item.desc}</p>
+                <h4 className="font-heading text-sm font-semibold text-foreground tracking-wide">{item.title}</h4>
+                <p className="text-muted-foreground text-xs mt-2 leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
