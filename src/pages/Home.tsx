@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
-import CategoryCard from '@/components/CategoryCard';
-import ProductCard from '@/components/ProductCard';
 import LoaderSkeleton from '@/components/LoaderSkeleton';
-import { productApi, type Product } from '@/api/productApi';
-import { categoryApi, type Category } from '@/api/categoryApi';
+import { productApi } from '@/api/productApi';
+import { categoryApi } from '@/api/categoryApi';
 import { Shield, Truck, RotateCcw, Gem } from 'lucide-react';
+
+const CategoryCard = lazy(() => import('@/components/CategoryCard'));
+const ProductCard = lazy(() => import('@/components/ProductCard'));
 
 const testimonials = [
   { name: 'Priya Sharma', text: 'Absolutely stunning pieces! The quality is unbelievable for the price.', rating: 5 },
@@ -21,108 +23,102 @@ const trustItems = [
   { icon: Shield, title: 'Secure Shopping', desc: '100% safe & secure checkout' },
 ];
 
-const Home = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
-  const [trending, setTrending] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+const sectionHeader = (subtitle: string, title: string) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    className="text-center mb-14"
+  >
+    <p className="text-gold uppercase tracking-[0.25em] text-xs font-body font-medium mb-3">{subtitle}</p>
+    <h2 className="font-heading text-3xl md:text-5xl font-bold text-foreground">{title}</h2>
+  </motion.div>
+);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [catRes, newRes, trendRes] = await Promise.all([
-          categoryApi.getAll(),
-          productApi.getAll({ sort: 'newest', page: 1, pageSize: 8 }),
-          productApi.getAll({ sort: 'trending', page: 1, pageSize: 8 }),
-        ]);
-        setCategories(catRes.data);
-        setNewArrivals(newRes.data.products);
-        setTrending(trendRes.data.products);
-      } catch {
-        // API not available
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+const Home = () => {
+  const { data: categories = [], isLoading: catLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryApi.getAll().then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: newArrivals = [], isLoading: newLoading } = useQuery({
+    queryKey: ['products', 'newest'],
+    queryFn: () => productApi.getAll({ sort: 'newest', page: 1, pageSize: 8 }).then(r => r.data.products),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: trending = [], isLoading: trendLoading } = useQuery({
+    queryKey: ['products', 'trending'],
+    queryFn: () => productApi.getAll({ sort: 'trending', page: 1, pageSize: 8 }).then(r => r.data.products),
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <div className="pb-20 md:pb-0">
       <HeroSection />
 
       {/* Categories */}
-      <section className="py-16 md:py-24">
+      <section className="py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <p className="text-gold uppercase tracking-[0.2em] text-xs font-body font-medium mb-2">Browse</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Our Collections</h2>
-          </motion.div>
-          {categories.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {categories.slice(0, 4).map((c) => (
-                <CategoryCard key={c.id} category={c} />
-              ))}
-            </div>
-          ) : !loading ? (
-            <p className="text-center text-muted-foreground">Connect your API to see categories</p>
-          ) : (
-            <LoaderSkeleton count={4} />
-          )}
+          {sectionHeader('Browse', 'Our Collections')}
+          <Suspense fallback={<LoaderSkeleton count={4} />}>
+            {catLoading ? (
+              <LoaderSkeleton count={4} />
+            ) : categories.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
+                {categories.slice(0, 4).map((c) => (
+                  <CategoryCard key={c.id} category={c} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Connect your API to see categories</p>
+            )}
+          </Suspense>
         </div>
       </section>
 
       {/* New Arrivals */}
-      <section className="py-16 md:py-24 bg-card">
+      <section className="py-20 md:py-32 bg-card">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <p className="text-gold uppercase tracking-[0.2em] text-xs font-body font-medium mb-2">Just In</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">New Arrivals</h2>
-          </motion.div>
-          {loading ? (
-            <LoaderSkeleton count={4} />
-          ) : newArrivals.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {newArrivals.map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground">Connect your API to see products</p>
-          )}
+          {sectionHeader('Just In', 'New Arrivals')}
+          <Suspense fallback={<LoaderSkeleton count={4} />}>
+            {newLoading ? (
+              <LoaderSkeleton count={4} />
+            ) : newArrivals.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
+                {newArrivals.map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Connect your API to see products</p>
+            )}
+          </Suspense>
         </div>
       </section>
 
       {/* Trending */}
-      <section className="py-16 md:py-24">
+      <section className="py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <p className="text-gold uppercase tracking-[0.2em] text-xs font-body font-medium mb-2">Popular</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Trending Now</h2>
-          </motion.div>
-          {loading ? (
-            <LoaderSkeleton count={4} />
-          ) : trending.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {trending.map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground">Connect your API to see trending products</p>
-          )}
+          {sectionHeader('Popular', 'Trending Now')}
+          <Suspense fallback={<LoaderSkeleton count={4} />}>
+            {trendLoading ? (
+              <LoaderSkeleton count={4} />
+            ) : trending.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
+                {trending.map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Connect your API to see trending products</p>
+            )}
+          </Suspense>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 md:py-24 bg-cream-dark">
+      <section className="py-20 md:py-32 bg-cream-dark">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <p className="text-gold uppercase tracking-[0.2em] text-xs font-body font-medium mb-2">Testimonials</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">What Our Customers Say</h2>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {sectionHeader('Testimonials', 'What Our Customers Say')}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {testimonials.map((t, i) => (
               <motion.div
                 key={i}
@@ -130,15 +126,15 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-card p-8 rounded-xl shadow-sm"
+                className="bg-card p-10 rounded-2xl shadow-sm"
               >
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-1 mb-5">
                   {Array.from({ length: t.rating }).map((_, j) => (
                     <span key={j} className="text-gold text-lg">★</span>
                   ))}
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed italic mb-4">"{t.text}"</p>
-                <p className="font-heading font-semibold text-foreground">{t.name}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed italic mb-6">"{t.text}"</p>
+                <p className="font-heading font-semibold text-foreground text-lg">{t.name}</p>
               </motion.div>
             ))}
           </div>
@@ -146,9 +142,9 @@ const Home = () => {
       </section>
 
       {/* Trust Banner */}
-      <section className="py-16 md:py-20">
+      <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
             {trustItems.map((item, i) => (
               <motion.div
                 key={i}
@@ -158,11 +154,11 @@ const Home = () => {
                 transition={{ delay: i * 0.1 }}
                 className="text-center"
               >
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gold/10 flex items-center justify-center">
-                  <item.icon size={22} className="text-gold" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gold/10 flex items-center justify-center">
+                  <item.icon size={24} className="text-gold" />
                 </div>
                 <h4 className="font-heading text-sm font-semibold text-foreground">{item.title}</h4>
-                <p className="text-muted-foreground text-xs mt-1">{item.desc}</p>
+                <p className="text-muted-foreground text-xs mt-1.5 leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>

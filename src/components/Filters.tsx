@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { X, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Category } from '@/api/categoryApi';
@@ -11,7 +11,7 @@ interface Props {
   onSortChange: (sort: string) => void;
 }
 
-const Filters = ({ categories, selectedCategory, onCategoryChange, sortBy, onSortChange }: Props) => {
+const Filters = memo(({ categories, selectedCategory, onCategoryChange, sortBy, onSortChange }: Props) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const sortOptions = [
@@ -22,46 +22,29 @@ const Filters = ({ categories, selectedCategory, onCategoryChange, sortBy, onSor
     { value: 'trending', label: 'Trending' },
   ];
 
+  const chipClass = (active: boolean) =>
+    `px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+      active
+        ? 'bg-gold text-primary-foreground shadow-sm shadow-gold/20'
+        : 'bg-cream-dark text-muted-foreground hover:text-foreground hover:bg-cream-dark/80'
+    }`;
+
   const filterContent = (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h4 className="font-heading text-sm uppercase tracking-wider text-foreground mb-3">Category</h4>
+        <h4 className="font-heading text-xs uppercase tracking-[0.2em] text-foreground mb-4">Category</h4>
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onCategoryChange(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              !selectedCategory ? 'bg-gold text-primary-foreground' : 'bg-cream-dark text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            All
-          </button>
+          <button onClick={() => onCategoryChange(null)} className={chipClass(!selectedCategory)}>All</button>
           {categories.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => onCategoryChange(c.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                selectedCategory === c.id ? 'bg-gold text-primary-foreground' : 'bg-cream-dark text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {c.name}
-            </button>
+            <button key={c.id} onClick={() => onCategoryChange(c.id)} className={chipClass(selectedCategory === c.id)}>{c.name}</button>
           ))}
         </div>
       </div>
-
       <div>
-        <h4 className="font-heading text-sm uppercase tracking-wider text-foreground mb-3">Sort By</h4>
+        <h4 className="font-heading text-xs uppercase tracking-[0.2em] text-foreground mb-4">Sort By</h4>
         <div className="flex flex-wrap gap-2">
           {sortOptions.map((o) => (
-            <button
-              key={o.value}
-              onClick={() => onSortChange(o.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                sortBy === o.value ? 'bg-gold text-primary-foreground' : 'bg-cream-dark text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {o.label}
-            </button>
+            <button key={o.value} onClick={() => onSortChange(o.value)} className={chipClass(sortBy === o.value)}>{o.label}</button>
           ))}
         </div>
       </div>
@@ -70,18 +53,15 @@ const Filters = ({ categories, selectedCategory, onCategoryChange, sortBy, onSor
 
   return (
     <>
-      {/* Desktop */}
-      <div className="hidden md:block mb-8">{filterContent}</div>
+      <div className="hidden md:block mb-10">{filterContent}</div>
 
-      {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden flex items-center gap-2 px-4 py-2 bg-cream-dark rounded-lg text-sm font-medium text-foreground mb-4"
+        className="md:hidden flex items-center gap-2 px-5 py-3 bg-cream-dark rounded-xl text-sm font-semibold text-foreground mb-6 active:scale-[0.98] transition-transform"
       >
         <SlidersHorizontal size={16} /> Filters
       </button>
 
-      {/* Mobile slide-up */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -97,11 +77,13 @@ const Filters = ({ categories, selectedCategory, onCategoryChange, sortBy, onSor
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25 }}
-              className="fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl z-50 p-6 max-h-[70vh] overflow-y-auto md:hidden"
+              className="fixed bottom-0 left-0 right-0 bg-card rounded-t-3xl z-50 p-8 max-h-[70vh] overflow-y-auto md:hidden"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-heading text-lg">Filters</h3>
-                <button onClick={() => setMobileOpen(false)}><X size={20} /></button>
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-heading text-xl font-semibold">Filters</h3>
+                <button onClick={() => setMobileOpen(false)} className="p-2 rounded-full hover:bg-cream-dark transition-colors">
+                  <X size={20} />
+                </button>
               </div>
               {filterContent}
             </motion.div>
@@ -110,6 +92,8 @@ const Filters = ({ categories, selectedCategory, onCategoryChange, sortBy, onSor
       </AnimatePresence>
     </>
   );
-};
+});
+
+Filters.displayName = 'Filters';
 
 export default Filters;
