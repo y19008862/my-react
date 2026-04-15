@@ -43,21 +43,20 @@ const Products = () => {
   };
 
   return (
-    <div className="pt-28 md:pt-32 pb-32 md:pb-24 min-h-screen">
+    <div className="pt-24 md:pt-28 pb-28 md:pb-20 min-h-screen">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
+          className="mb-10"
         >
-          <p className="text-gold uppercase tracking-[0.25em] text-[11px] font-medium mb-3">Explore</p>
-          <h1 className="font-heading text-3xl md:text-5xl font-bold text-foreground tracking-tight">Our Collection</h1>
-          <p className="text-muted-foreground mt-4 text-sm tracking-wide">Discover exquisite pieces crafted with elegance</p>
+          <p className="text-gold uppercase tracking-[0.2em] text-xs font-medium mb-2">Explore</p>
+          <h1 className="font-heading text-3xl md:text-5xl font-bold text-foreground">Our Collection</h1>
+          <p className="text-muted-foreground mt-3 text-sm">Discover exquisite pieces crafted with elegance</p>
         </motion.div>
 
         {/* Search */}
-        <div className="mb-10 relative">
+        <div className="mb-8 relative">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
@@ -66,7 +65,7 @@ const Products = () => {
               if (e.key === 'Enter') updateParam('search', (e.target as HTMLInputElement).value || null);
             }}
             placeholder="Search jewelry..."
-            className="w-full md:w-96 pl-12 pr-4 py-4 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold/30 transition-all duration-300"
+            className="w-full md:w-96 pl-11 pr-4 py-3.5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 transition-shadow"
           />
         </div>
 
@@ -90,11 +89,11 @@ const Products = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-20">
+              <div className="flex items-center justify-center gap-2 mt-16">
                 <button
                   onClick={() => updateParam('page', String(page - 1))}
                   disabled={page <= 1}
-                  className="p-3.5 rounded-xl border border-border disabled:opacity-20 hover:bg-cream-dark transition-all duration-200"
+                  className="p-3 rounded-xl border border-border disabled:opacity-30 hover:bg-cream-dark transition-colors"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -104,10 +103,8 @@ const Products = () => {
                     <button
                       key={p}
                       onClick={() => updateParam('page', String(p))}
-                      className={`w-12 h-12 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                        page === p
-                          ? 'bg-gold text-primary-foreground shadow-gold-glow'
-                          : 'border border-border hover:bg-cream-dark text-muted-foreground hover:text-foreground'
+                      className={`w-11 h-11 rounded-xl text-sm font-semibold transition-all ${
+                        page === p ? 'bg-gold text-primary-foreground shadow-md shadow-gold/20' : 'border border-border hover:bg-cream-dark'
                       }`}
                     >
                       {p}
@@ -117,7 +114,7 @@ const Products = () => {
                 <button
                   onClick={() => updateParam('page', String(page + 1))}
                   disabled={page >= totalPages}
-                  className="p-3.5 rounded-xl border border-border disabled:opacity-20 hover:bg-cream-dark transition-all duration-200"
+                  className="p-3 rounded-xl border border-border disabled:opacity-30 hover:bg-cream-dark transition-colors"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -125,9 +122,9 @@ const Products = () => {
             )}
           </>
         ) : (
-          <div className="text-center py-28">
+          <div className="text-center py-24">
             <p className="text-muted-foreground text-lg font-heading">No products found</p>
-            <p className="text-muted-foreground text-sm mt-3">Connect your API to see products here</p>
+            <p className="text-muted-foreground text-sm mt-2">Connect your API to see products here</p>
           </div>
         )}
       </div>
