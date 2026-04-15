@@ -9,7 +9,6 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import { useWishlistStore } from "@/stores/wishlistStore";
 
-// Lazy load pages
 const Home = lazy(() => import("@/pages/Home"));
 const Products = lazy(() => import("@/pages/Products"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
@@ -35,13 +34,13 @@ const queryClient = new QueryClient({
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [pathname]);
   return null;
 };
 
 const PageLoader = () => (
-  <div className="pt-24 pb-20 min-h-screen flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+  <div className="pt-28 pb-20 min-h-screen flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
   </div>
 );
 
