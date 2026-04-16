@@ -1,28 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Grid3X3, TrendingUp, LogOut } from 'lucide-react';
+import { Package, Grid3X3, MessageSquare, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { productApi } from '@/api/productApi';
-import { categoryApi } from '@/api/categoryApi';
+import { adminApi, type DashboardData } from '@/api/adminApi';
 import { useAuthStore } from '@/stores/authStore';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({ products: 0, categories: 0 });
+  const [data, setData] = useState<DashboardData | null>(null);
   const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
-    Promise.all([
-      productApi.getAll({ pageSize: 1 }),
-      categoryApi.getAll(),
-    ]).then(([pRes, cRes]) => {
-      setStats({ products: pRes.data.totalCount, categories: cRes.data.length });
-    }).catch(() => {});
+    adminApi.getDashboard()
+      .then((r) => setData(r.data))
+      .catch(() => {});
   }, []);
 
   const cards = [
-    { label: 'Products', value: stats.products, icon: Package, to: '/admin/products', color: 'bg-gold/10 text-gold' },
-    { label: 'Categories', value: stats.categories, icon: Grid3X3, to: '/admin/categories', color: 'bg-green-100 text-green-700' },
-    { label: 'Trending', value: '—', icon: TrendingUp, to: '/admin/products', color: 'bg-blue-100 text-blue-700' },
+    { label: 'Products', value: data?.totalProducts ?? '—', sub: `${data?.activeProducts ?? 0} active`, icon: Package, to: '/admin/products', color: 'bg-gold/10 text-gold' },
+    { label: 'Categories', value: data?.totalCategories ?? '—', sub: '', icon: Grid3X3, to: '/admin/categories', color: 'bg-green-100 text-green-700' },
+    { label: 'Testimonials', value: data?.totalTestimonials ?? '—', sub: `${data?.pendingTestimonials ?? 0} pending`, icon: MessageSquare, to: '/admin/dashboard', color: 'bg-blue-100 text-blue-700' },
   ];
 
   return (
@@ -49,6 +45,7 @@ const AdminDashboard = () => {
                 </div>
                 <p className="text-2xl font-bold text-foreground">{c.value}</p>
                 <p className="text-muted-foreground text-sm">{c.label}</p>
+                {c.sub && <p className="text-muted-foreground text-xs mt-1">{c.sub}</p>}
               </Link>
             </motion.div>
           ))}

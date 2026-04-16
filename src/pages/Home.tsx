@@ -5,16 +5,11 @@ import HeroSection from '@/components/HeroSection';
 import LoaderSkeleton from '@/components/LoaderSkeleton';
 import { productApi } from '@/api/productApi';
 import { categoryApi } from '@/api/categoryApi';
+import { testimonialApi, type Testimonial } from '@/api/adminApi';
 import { Shield, Truck, RotateCcw, Gem } from 'lucide-react';
 
 const CategoryCard = lazy(() => import('@/components/CategoryCard'));
 const ProductCard = lazy(() => import('@/components/ProductCard'));
-
-const testimonials = [
-  { name: 'Priya Sharma', text: 'Absolutely stunning pieces! The quality is unbelievable for the price.', rating: 5 },
-  { name: 'Anita Patel', text: 'My go-to store for all occasions. Every piece looks so premium!', rating: 5 },
-  { name: 'Meera Joshi', text: 'Got so many compliments on the necklace set. Will definitely order more!', rating: 5 },
-];
 
 const trustItems = [
   { icon: Gem, title: 'Premium Quality', desc: 'Handcrafted with finest materials' },
@@ -43,14 +38,20 @@ const Home = () => {
   });
 
   const { data: newArrivals = [], isLoading: newLoading } = useQuery({
-    queryKey: ['products', 'newest'],
-    queryFn: () => productApi.getAll({ sort: 'newest', page: 1, pageSize: 8 }).then(r => r.data.products),
+    queryKey: ['products', 'new-arrivals'],
+    queryFn: () => productApi.getNewArrivals().then(r => r.data),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: trending = [], isLoading: trendLoading } = useQuery({
     queryKey: ['products', 'trending'],
-    queryFn: () => productApi.getAll({ sort: 'trending', page: 1, pageSize: 8 }).then(r => r.data.products),
+    queryFn: () => productApi.getTrending().then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: testimonials = [] } = useQuery<Testimonial[]>({
+    queryKey: ['testimonials'],
+    queryFn: () => testimonialApi.getAll().then(r => r.data),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -119,13 +120,12 @@ const Home = () => {
         <div className="container mx-auto px-4">
           {sectionHeader('Testimonials', 'What Our Customers Say')}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
+            {testimonials.length > 0 ? testimonials.slice(0, 6).map((t) => (
               <motion.div
-                key={i}
+                key={t.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
                 className="bg-card p-10 rounded-2xl shadow-sm"
               >
                 <div className="flex gap-1 mb-5">
@@ -133,10 +133,12 @@ const Home = () => {
                     <span key={j} className="text-gold text-lg">★</span>
                   ))}
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed italic mb-6">"{t.text}"</p>
-                <p className="font-heading font-semibold text-foreground text-lg">{t.name}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed italic mb-6">"{t.review}"</p>
+                <p className="font-heading font-semibold text-foreground text-lg">{t.customerName}</p>
               </motion.div>
-            ))}
+            )) : (
+              <p className="text-center text-muted-foreground col-span-3">Connect your API to see testimonials</p>
+            )}
           </div>
         </div>
       </section>
