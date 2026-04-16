@@ -53,7 +53,7 @@ const Wishlist = () => {
                   className="flex gap-4 p-4 bg-card rounded-xl border border-border"
                 >
                   <Link to={`/products/${item.id}`} className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-cream-dark">
-                    <img src={item.images?.[0] || '/placeholder.svg'} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.mainImageUrl || item.images?.[0] || '/placeholder.svg'} alt={item.name} className="w-full h-full object-cover" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link to={`/products/${item.id}`} className="font-heading text-sm font-semibold text-foreground hover:text-gold transition-colors line-clamp-1">
