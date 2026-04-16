@@ -10,4 +10,5 @@ export interface Category {
 
 export const categoryApi = {
   getAll: () => API.get<Category[]>('/categories'),
+  getById: (id: number) => API.get<Category>(`/categories/${id}`),
 };

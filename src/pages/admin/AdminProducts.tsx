@@ -11,14 +11,14 @@ const AdminProducts = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState<Partial<Product> | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProductId, setUploadProductId] = useState<number | null>(null);
   const logout = useAuthStore((s) => s.logout);
 
   const load = () => {
     setLoading(true);
-    Promise.all([productApi.getAll({ pageSize: 100 }), categoryApi.getAll()])
+    Promise.all([adminApi.getProducts({ pageSize: 100 }), adminApi.getCategories()])
       .then(([pRes, cRes]) => { setProducts(pRes.data.products); setCategories(cRes.data); })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -30,9 +30,30 @@ const AdminProducts = () => {
     if (!editProduct) return;
     try {
       if (editProduct.id) {
-        await adminApi.updateProduct(editProduct.id, editProduct);
+        await adminApi.updateProduct(editProduct.id, {
+          name: editProduct.name || '',
+          description: editProduct.description || '',
+          price: editProduct.price || 0,
+          originalPrice: editProduct.originalPrice,
+          categoryId: editProduct.categoryId || 0,
+          material: editProduct.material,
+          stoneType: editProduct.stoneType,
+          isActive: editProduct.isActive,
+          isTrending: editProduct.isTrending,
+          isNew: editProduct.isNew,
+        });
       } else {
-        await adminApi.createProduct(editProduct);
+        await adminApi.createProduct({
+          name: editProduct.name || '',
+          description: editProduct.description || '',
+          price: editProduct.price || 0,
+          originalPrice: editProduct.originalPrice,
+          categoryId: editProduct.categoryId || 0,
+          material: editProduct.material,
+          stoneType: editProduct.stoneType,
+          isTrending: editProduct.isTrending,
+          isNew: editProduct.isNew,
+        });
       }
       setEditProduct(null);
       load();
@@ -48,11 +69,11 @@ const AdminProducts = () => {
   };
 
   const handleImageUpload = async () => {
-    if (!imageFile || !uploadProductId) return;
+    if (!imageFiles.length || !uploadProductId) return;
     setUploading(true);
     try {
-      await adminApi.uploadImage(uploadProductId, imageFile);
-      setImageFile(null);
+      await adminApi.uploadImages(uploadProductId, imageFiles);
+      setImageFiles([]);
       setUploadProductId(null);
       load();
     } catch { /* handle error */ }
@@ -61,7 +82,9 @@ const AdminProducts = () => {
 
   const handleToggle = async (product: Product, field: 'isNew' | 'isTrending' | 'isActive') => {
     try {
-      await adminApi.updateProduct(product.id, { [field]: !product[field] });
+      if (field === 'isActive') await adminApi.toggleActive(product.id);
+      else if (field === 'isTrending') await adminApi.toggleTrending(product.id);
+      else if (field === 'isNew') await adminApi.toggleNewArrival(product.id);
       load();
     } catch { /* handle error */ }
   };
@@ -115,13 +138,34 @@ const AdminProducts = () => {
                   placeholder="Price"
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
                 />
-                <select
-                  value={editProduct.categoryId || ''}
-                  onChange={(e) => setEditProduct({ ...editProduct, categoryId: Number(e.target.value) })}
+                <input
+                  type="number"
+                  value={editProduct.originalPrice || ''}
+                  onChange={(e) => setEditProduct({ ...editProduct, originalPrice: Number(e.target.value) || undefined })}
+                  placeholder="Original Price"
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
-                >
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                />
+              </div>
+              <select
+                value={editProduct.categoryId || ''}
+                onChange={(e) => setEditProduct({ ...editProduct, categoryId: Number(e.target.value) })}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
+              >
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  value={editProduct.material || ''}
+                  onChange={(e) => setEditProduct({ ...editProduct, material: e.target.value })}
+                  placeholder="Material"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
+                />
+                <input
+                  value={editProduct.stoneType || ''}
+                  onChange={(e) => setEditProduct({ ...editProduct, stoneType: e.target.value })}
+                  placeholder="Stone Type"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
+                />
               </div>
               <div className="flex gap-3">
                 <button onClick={handleSave} className="flex-1 bg-gold text-primary-foreground py-2 rounded-lg text-sm font-semibold hover:bg-gold-dark transition-colors">
@@ -139,13 +183,19 @@ const AdminProducts = () => {
         {uploadProductId && (
           <div className="fixed inset-0 bg-charcoal/50 z-50 flex items-center justify-center p-4">
             <div className="bg-card rounded-xl p-6 w-full max-w-sm space-y-4">
-              <h3 className="font-heading text-lg font-semibold">Upload Image</h3>
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} className="text-sm" />
+              <h3 className="font-heading text-lg font-semibold">Upload Images</h3>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
+                className="text-sm"
+              />
               <div className="flex gap-3">
-                <button onClick={handleImageUpload} disabled={!imageFile || uploading} className="flex-1 bg-gold text-primary-foreground py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+                <button onClick={handleImageUpload} disabled={!imageFiles.length || uploading} className="flex-1 bg-gold text-primary-foreground py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
                   {uploading ? 'Uploading...' : 'Upload'}
                 </button>
-                <button onClick={() => { setUploadProductId(null); setImageFile(null); }} className="flex-1 border border-border py-2 rounded-lg text-sm">
+                <button onClick={() => { setUploadProductId(null); setImageFiles([]); }} className="flex-1 border border-border py-2 rounded-lg text-sm">
                   Cancel
                 </button>
               </div>
@@ -178,7 +228,7 @@ const AdminProducts = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded bg-cream-dark overflow-hidden flex-shrink-0">
-                            <img src={p.images?.[0] || '/placeholder.svg'} alt="" className="w-full h-full object-cover" />
+                            <img src={p.mainImageUrl || p.images?.[0] || '/placeholder.svg'} alt="" className="w-full h-full object-cover" />
                           </div>
                           <span className="font-medium text-foreground line-clamp-1">{p.name}</span>
                         </div>

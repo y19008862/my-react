@@ -26,11 +26,10 @@ const ProductDetail = () => {
       .then((r) => {
         setProduct(r.data);
         setSelectedImage(0);
-        if (r.data.categoryId) {
-          productApi.getAll({ categoryId: r.data.categoryId, pageSize: 4 })
-            .then((rel) => setRelated(rel.data.products.filter((p) => p.id !== r.data.id)))
-            .catch(() => {});
-        }
+        // Fetch related products via dedicated endpoint
+        productApi.getRelated(Number(id))
+          .then((rel) => setRelated(rel.data))
+          .catch(() => {});
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -75,7 +74,7 @@ const ProductDetail = () => {
   }
 
   const inWishlist = isInWishlist(product.id);
-  const images = product.images?.length ? product.images : ['/placeholder.svg'];
+  const images = product.images?.length ? product.images : [product.mainImageUrl || '/placeholder.svg'];
   const lightboxSlides = images.map((src) => ({ src }));
 
   return (
@@ -141,6 +140,24 @@ const ProductDetail = () => {
             <div className="w-full h-px bg-border my-8" />
 
             <p className="text-muted-foreground text-sm leading-relaxed">{product.description}</p>
+
+            {/* Material & Stone */}
+            {(product.material || product.stoneType) && (
+              <div className="flex flex-wrap gap-4 mt-6 text-sm">
+                {product.material && (
+                  <div>
+                    <span className="text-muted-foreground">Material: </span>
+                    <span className="text-foreground font-medium">{product.material}</span>
+                  </div>
+                )}
+                {product.stoneType && (
+                  <div>
+                    <span className="text-muted-foreground">Stone: </span>
+                    <span className="text-foreground font-medium">{product.stoneType}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {product.tags && product.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-6">

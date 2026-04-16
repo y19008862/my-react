@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login({ username, password });
+    await login({ email, password });
     if (useAuthStore.getState().isAuthenticated) {
       navigate('/admin/dashboard');
     }
@@ -35,9 +35,10 @@ const AdminLogin = () => {
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
 
           <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
             required
             className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
           />

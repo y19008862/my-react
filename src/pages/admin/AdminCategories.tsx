@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2, ArrowLeft, LogOut } from 'lucide-react';
-import { categoryApi, type Category } from '@/api/categoryApi';
+import { type Category } from '@/api/categoryApi';
 import { adminApi } from '@/api/adminApi';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -9,11 +9,12 @@ const AdminCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editCat, setEditCat] = useState<Partial<Category> | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const logout = useAuthStore((s) => s.logout);
 
   const load = () => {
     setLoading(true);
-    categoryApi.getAll()
+    adminApi.getCategories()
       .then((r) => setCategories(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -24,12 +25,18 @@ const AdminCategories = () => {
   const handleSave = async () => {
     if (!editCat || !editCat.name) return;
     try {
+      const formData = new FormData();
+      formData.append('name', editCat.name);
+      if (editCat.description) formData.append('description', editCat.description);
+      if (imageFile) formData.append('image', imageFile);
+
       if (editCat.id) {
-        await adminApi.updateCategory(editCat.id, { name: editCat.name, description: editCat.description, image: editCat.image });
+        await adminApi.updateCategory(editCat.id, formData);
       } else {
-        await adminApi.createCategory({ name: editCat.name, description: editCat.description, image: editCat.image });
+        await adminApi.createCategory(formData);
       }
       setEditCat(null);
+      setImageFile(null);
       load();
     } catch { /* handle error */ }
   };
@@ -81,9 +88,18 @@ const AdminCategories = () => {
                 placeholder="Description (optional)"
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold/30"
               />
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Category Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="text-sm"
+                />
+              </div>
               <div className="flex gap-3">
                 <button onClick={handleSave} className="flex-1 bg-gold text-primary-foreground py-2 rounded-lg text-sm font-semibold hover:bg-gold-dark transition-colors">Save</button>
-                <button onClick={() => setEditCat(null)} className="flex-1 border border-border py-2 rounded-lg text-sm hover:bg-cream-dark transition-colors">Cancel</button>
+                <button onClick={() => { setEditCat(null); setImageFile(null); }} className="flex-1 border border-border py-2 rounded-lg text-sm hover:bg-cream-dark transition-colors">Cancel</button>
               </div>
             </div>
           </div>
@@ -97,9 +113,17 @@ const AdminCategories = () => {
           <div className="space-y-3">
             {categories.map((c) => (
               <div key={c.id} className="flex items-center justify-between bg-card border border-border rounded-xl px-5 py-4">
-                <div>
-                  <p className="font-medium text-foreground">{c.name}</p>
-                  {c.description && <p className="text-muted-foreground text-xs mt-0.5">{c.description}</p>}
+                <div className="flex items-center gap-3">
+                  {c.image && (
+                    <div className="w-10 h-10 rounded bg-cream-dark overflow-hidden flex-shrink-0">
+                      <img src={c.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-foreground">{c.name}</p>
+                    {c.description && <p className="text-muted-foreground text-xs mt-0.5">{c.description}</p>}
+                    {c.productCount !== undefined && <p className="text-muted-foreground text-xs">{c.productCount} products</p>}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setEditCat(c)} className="p-1.5 text-muted-foreground hover:text-foreground"><Pencil size={16} /></button>

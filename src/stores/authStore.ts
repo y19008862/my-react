@@ -29,6 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    adminApi.logout().catch(() => {});
     localStorage.removeItem('admin_token');
     set({ token: null, isAuthenticated: false });
   },
