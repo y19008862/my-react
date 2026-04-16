@@ -14,8 +14,8 @@ const ProductCard = memo(({ product }: Props) => {
   const { addItem, removeItem, isInWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
 
-  const mainImage = product.images?.[0] || '/placeholder.svg';
-  const hoverImage = product.images?.[1] || mainImage;
+  const mainImage = product.mainImageUrl || product.images?.[0] || '/placeholder.svg';
+  const hoverImage = product.images?.[1] || product.images?.[0] || mainImage;
 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
